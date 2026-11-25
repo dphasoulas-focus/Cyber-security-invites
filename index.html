@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Invitation Generator</title>
+
+<style>
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #cbd5e1;
+  --primary: #2563eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 760px;
+  margin: auto;
+  background: var(--card);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(15,23,42,.06);
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-top: 0;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 16px;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 11px;
+  margin-top: 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: Arial, sans-serif;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 11px 18px;
+  margin-top: 18px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.invitation {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 25px;
+  margin-top: 25px;
+}
+
+.details {
+  background: #f5f7fb;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 18px;
+}
+
+.hidden {
+  display: none;
+}
+
+.notice {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.meet-link {
+  color: #2563eb;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.field-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ADMINISTRATION PAGE -->
+
+<div class="container" id="admin">
+
+<h1>Training Invitation Generator</h1>
+
+<p class="subtitle">
+Create and customize invitations for upcoming training classes.
+</p>
+
+<label for="employee">Employee Name (Optional)</label>
+<input type="text" id="employee"
+placeholder="Enter employee name or leave blank for a group">
+
+<label for="date">Training Date</label>
+<input type="date" id="date">
+
+<label for="time">Training Time</label>
+<input type="time" id="time">
+
+<label for="locationType">Training Format</label>
+<select id="locationType" onchange="updateLocationFields()">
+  <option value="">Select a training format</option>
+  <option value="church">Church St - In Person</option>
+  <option value="meet">Google Meet - Virtual</option>
+  <option value="hybrid">Hybrid - Church St and Google Meet</option>
+</select>
+
+<div id="churchFields" class="hidden">
+  <label for="room">Church St Room or Training Area (Optional)</label>
+  <input type="text" id="room"
+  placeholder="Enter room or training area">
+</div>
+
+<div id="meetFields" class="hidden">
+  <label for="meetUrl">Google Meet Link</label>
+  <input type="url" id="meetUrl"
+  placeholder="https://meet.google.com/...">
+  <p class="field-note">
+    Paste the Google Meet link for this training session.
+  </p>
+</div>
+
+<label for="description">Training Description</label>
+<textarea id="description">You are invited to attend our training session.
+
+Topics include:
+- Identifying phishing emails
+- Password security
+- Protecting sensitive information
+- Recognizing cybersecurity threats
+- Safe internet practices
+
+We look forward to your participation!</textarea>
+
+<label for="instructions">Additional Instructions (Optional)</label>
+<textarea id="instructions"
+placeholder="Enter any additional information for attendees"></textarea>
+
+<button onclick="generateInvitation()">
+Generate Invitation
+</button>
+
+<!-- ADMIN PREVIEW -->
+
+<div id="result" class="hidden">
+
+  <div class="invitation">
+    <h2>Training Invitation</h2>
+
+    <p id="welcome"></p>
+
+    <div class="details">
+      <p><strong>Date:</strong> <span id="showDate"></span></p>
+      <p><strong>Time:</strong> <span id="showTime"></span></p>
+      <p><strong>Location:</strong> <span id="showLocation"></span></p>
+      <p id="adminMeetRow" class="hidden">
+        <strong>Google Meet:</strong>
+        <span id="adminMeetLink"></span>
+      </p>
+    </div>
+
+    <p><strong>Training Information:</strong></p>
+    <p id="showDescription" style="white-space:pre-wrap"></p>
+
+    <p><strong>Additional Instructions:</strong></p>
+    <p id="showInstructions" style="white-space:pre-wrap"></p>
+  </div>
+
+  <button onclick="copyInvitationLink()">
+    Copy Invitation Link
+  </button>
+
+  <button onclick="copyEmail()">
+    Copy Email Draft
+  </button>
+
+  <p id="status" class="notice"></p>
+
+  <p class="notice">
+    Select your email recipients manually. Paste the email
+    draft into your email and send it to your chosen employees.
+  </p>
+
+</div>
+
+</div>
+
+<!-- EMPLOYEE INVITATION PAGE -->
+
+<div class="container hidden" id="employeeView">
+
+  <div class="invitation">
+    <h2>Training Invitation</h2>
+
+    <p id="employeeWelcome"></p>
+
+    <div class="details">
+      <p><strong>Date:</strong> <span id="employeeDate"></span></p>
+      <p><strong>Time:</strong> <span id="employeeTime"></span></p>
+      <p><strong>Location:</strong> <span id="employeeLocation"></span></p>
+      <p id="employeeMeetRow" class="hidden">
+        <strong>Google Meet:</strong>
+        <span id="employeeMeetLink"></span>
+      </p>
+    </div>
+
+    <p><strong>Training Information:</strong></p>
+    <p id="employeeDescription" style="white-space:pre-wrap"></p>
+
+    <p><strong>Additional Instructions:</strong></p>
+    <p id="employeeInstructions" style="white-space:pre-wrap"></p>
+  </div>
+
+</div>
+
+<script>
+
+let currentInvitation = null;
+let currentLink = "";
+
+// Show the appropriate location fields
+
+function updateLocationFields() {
+
+  const type = document.getElementById("locationType").value;
+
+  document.getElementById("churchFields").classList.toggle(
+    "hidden",
+    type !== "church" && type !== "hybrid"
+  );
+
+  document.getElementById("meetFields").classList.toggle(
+    "hidden",
+    type !== "meet" && type !== "hybrid"
+  );
+}
+
+// Generate a new invitation
+
+function generateInvitation() {
+
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const locationType = document.getElementById("locationType").value;
+
+  const room = document.getElementById("room").value.trim();
+  const meetUrl = document.getElementById("meetUrl").value.trim();
+
+  if (!date || !time) {
+    alert("Please enter a training date and time.");
+    return;
+  }
+
+  if (!locationType) {
+    alert("Please select a training format.");
+    return;
+  }
+
+  if (
+    (locationType === "meet" || locationType === "hybrid") &&
+    !meetUrl
+  ) {
+    alert("Please enter the Google Meet link.");
+    return;
+  }
+
+  // Check that the meeting link is a valid HTTPS address
+
+  if (meetUrl) {
+    try {
+      const parsedUrl = new URL(meetUrl);
+
+      if (parsedUrl.protocol !== "https:") {
+        alert("The Google Meet link must use HTTPS.");
+        return;
+      }
+
+    } catch (error) {
+      alert("Please enter a valid Google Meet URL.");
+      return;
+    }
+  }
+
+  currentInvitation = {
+    employee: document.getElementById("employee").value.trim(),
+    date: date,
+    time: time,
+    locationType: locationType,
+    room: room,
+    meetUrl: meetUrl,
+    description: document.getElementById("description").value,
+    instructions: document.getElementById("instructions").value
+  };
+
+  // Display administrator preview
+
+  displayInvitation(currentInvitation);
+
+  // Save a separate copy in this browser
+
+  try {
+    let saved = JSON.parse(
+      localStorage.getItem("trainingInvitations") || "[]"
+    );
+
+    saved.push(currentInvitation);
+
+    localStorage.setItem(
+      "trainingInvitations",
+      JSON.stringify(saved)
+    );
+
+    document.getElementById("status").textContent =
+      "Invitation generated and saved in this browser.";
+
+  } catch (error) {
+    document.getElementById("status").textContent =
+      "Invitation generated. Browser storage was unavailable.";
+  }
+
+  // Create a separate invitation link
+
+  currentLink =
+    window.location.href.split("#")[0] +
+    "#invite=" +
+    encodeURIComponent(JSON.stringify(currentInvitation));
+
+  document.getElementById("result").classList.remove("hidden");
+}
+
+// Determine the location wording
+
+function getLocationText(data) {
+
+  if (data.locationType === "church") {
+    return data.room
+      ? "Church St - " + data.room
+      : "Church St";
+  }
+
+  if (data.locationType === "meet") {
+    return "Google Meet - Virtual Training";
+  }
+
+  if (data.locationType === "hybrid") {
+    return data.room
+      ? "Church St - " + data.room + " and Google Meet"
+      : "Church St and Google Meet";
+  }
+
+  return "To be announced";
+}
+
+// Add a clickable Google Meet link safely
+
+function displayMeetLink(rowId, linkId, url) {
+
+  const row = document.getElementById(rowId);
+  const container = document.getElementById(linkId);
+
+  container.replaceChildren();
+
+  if (!url) {
+    row.classList.add("hidden");
+    return;
+  }
+
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.textContent = "Join Google Meet";
+  anchor.className = "meet-link";
+  anchor.target = "_blank";
+  anchor.rel = "noopener noreferrer";
+
+  container.appendChild(anchor);
+  row.classList.remove("hidden");
+}
+
+// Display invitation in administrator preview
+
+function displayInvitation(data) {
+
+  document.getElementById("welcome").textContent =
+    data.employee
+    ? "Hello " + data.employee + ", you are invited to attend our training session."
+    : "You are invited to attend our training session.";
+
+  document.getElementById("showDate").textContent =
+    formatDate(data.date);
+
+  document.getElementById("showTime").textContent =
+    formatTime(data.time);
+
+  document.getElementById("showLocation").textContent =
+    getLocationText(data);
+
+  displayMeetLink(
+    "adminMeetRow",
+    "adminMeetLink",
+    data.meetUrl
+  );
+
+  document.getElementById("showDescription").textContent =
+    data.description;
+
+  document.getElementById("showInstructions").textContent =
+    data.instructions || "None";
+}
+
+// Display employee invitation
+
+function displayEmployeeInvitation(data) {
+
+  document.getElementById("employeeWelcome").textContent =
+    data.employee
+    ? "Hello " + data.employee + ", you are invited to attend our training session."
+    : "You are invited to attend our training session.";
+
+  document.getElementById("employeeDate").textContent =
+    formatDate(data.date);
+
+  document.getElementById("employeeTime").textContent =
+    formatTime(data.time);
+
+  document.getElementById("employeeLocation").textContent =
+    getLocationText(data);
+
+  displayMeetLink(
+    "employeeMeetRow",
+    "employeeMeetLink",
+    data.meetUrl
+  );
+
+  document.getElementById("employeeDescription").textContent =
+    data.description;
+
+  document.getElementById("employeeInstructions").textContent =
+    data.instructions || "None";
+
+  document.getElementById("admin").classList.add("hidden");
+  document.getElementById("employeeView").classList.remove("hidden");
+}
+
+// Format date
+
+function formatDate(value) {
+
+  if (!value) return "";
+
+  return new Date(value + "T12:00:00").toLocaleDateString(
+    "en-US",
+    {month:"long", day:"numeric", year:"numeric"}
+  );
+}
+
+// Format time
+
+function formatTime(value) {
+
+  if (!value) return "";
+
+  const parts = value.split(":");
+  let hour = Number(parts[0]);
+  const minute = parts[1];
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12 || 12;
+
+  return hour + ":" + minute + " " + ampm;
+}
+
+// Copy invitation link
+
+async function copyInvitationLink() {
+
+  if (!currentLink) return;
+
+  try {
+
+    await navigator.clipboard.writeText(currentLink);
+
+    document.getElementById("status").textContent =
+      "Invitation link copied. You can paste it into your email.";
+
+  } catch (error) {
+
+    document.getElementById("status").textContent =
+      "Copy was unavailable. Please copy the invitation link manually.";
+
+  }
+}
+
+// Create an email draft with a small blue hyperlink
+
+async function copyEmail() {
+
+  if (!currentInvitation || !currentLink) return;
+
+  const plainText =
+    "You are invited to attend a training session.\n\n" +
+    "Please click the link below to view your invitation:\n\n" +
+    "Do Not Open: " + currentLink + "\n\n" +
+    "Thank you.";
+
+  const safeLink = escapeHtml(currentLink);
+
+  const htmlText =
+    '<p>You are invited to attend a training session.</p>' +
+    '<p>Please click the link below to view your invitation:</p>' +
+    '<p><a href="' + safeLink + '" ' +
+    'style="color:#2563eb;font-size:10px;' +
+    'text-decoration:underline;">Do Not Open</a></p>' +
+    '<p>Thank you.</p>';
+
+  try {
+
+    // Copy formatted HTML and plain-text versions
+
+    if (navigator.clipboard && window.ClipboardItem) {
+
+      const clipboardItem = new ClipboardItem({
+        "text/html": new Blob(
+          [htmlText],
+          {type: "text/html"}
+        ),
+        "text/plain": new Blob(
+          [plainText],
+          {type: "text/plain"}
+        )
+      });
+
+      await navigator.clipboard.write([clipboardItem]);
+
+      document.getElementById("status").textContent =
+        "Formatted email draft copied. Paste it into your email message.";
+
+    } else {
+
+      await navigator.clipboard.writeText(plainText);
+
+      document.getElementById("status").textContent =
+        "Plain-text email draft copied. You may need to add the hyperlink manually.";
+
+    }
+
+  } catch (error) {
+
+    document.getElementById("status").textContent =
+      "Email copy was unavailable. Try using the Copy Invitation Link button instead.";
+
+  }
+}
+
+// Escape text before placing the link in HTML
+
+function escapeHtml(value) {
+
+  return value.replace(/[&<>"']/g, function(character) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[character];
+  });
+
+}
+
+// Open invitation when an employee clicks their link
+
+function checkInvitationLink() {
+
+  const hash = window.location.hash;
+
+  if (hash.startsWith("#invite=")) {
+
+    try {
+
+      const data = JSON.parse(
+        decodeURIComponent(hash.substring(8))
+      );
+
+      if (
+        !data.date ||
+        !data.time ||
+        !["church", "meet", "hybrid"].includes(data.locationType)
+      ) {
+        throw new Error("Invalid invitation data");
+      }
+
+      if (data.meetUrl) {
+        const parsedUrl = new URL(data.meetUrl);
+
+        if (parsedUrl.protocol !== "https:") {
+          throw new Error("Invalid meeting link");
+        }
+      }
+
+      displayEmployeeInvitation(data);
+
+    } catch (error) {
+
+      alert("This invitation link is invalid.");
+
+    }
+  }
+}
+
+// Check whether this page is an employee invitation
+
+checkInvitationLink();
+
+</script>
+
+</body>
+</html>
