@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cybersecurity Training Invite</title>
+<title>Cybersecurity Invites</title>
 
 <style>
 :root {
@@ -129,15 +129,11 @@ button:hover {
 
 <div class="container" id="admin">
 
-<h1>Cybersecurity Invite</h1>
+<h1>Cybersecurity Invites</h1>
 
 <p class="subtitle">
 Create and customize invitations for upcoming training classes.
 </p>
-
-<label for="employee">Employee Name (Optional)</label>
-<input type="text" id="employee"
-placeholder="Enter employee name or leave blank for a group">
 
 <label for="date">Training Date</label>
 <input type="date" id="date">
@@ -330,7 +326,6 @@ function generateInvitation() {
   }
 
   currentInvitation = {
-    employee: document.getElementById("employee").value.trim(),
     date: date,
     time: time,
     locationType: locationType,
@@ -429,9 +424,7 @@ function displayMeetLink(rowId, linkId, url) {
 function displayInvitation(data) {
 
   document.getElementById("welcome").textContent =
-    data.employee
-    ? "Hello " + data.employee + ", you are invited to attend our training session."
-    : "You are invited to attend our training session.";
+    "You are invited to attend our training session.";
 
   document.getElementById("showDate").textContent =
     formatDate(data.date);
@@ -454,15 +447,12 @@ function displayInvitation(data) {
   document.getElementById("showInstructions").textContent =
     data.instructions || "None";
 }
-
 // Display employee invitation
 
 function displayEmployeeInvitation(data) {
 
   document.getElementById("employeeWelcome").textContent =
-    data.employee
-    ? "Hello " + data.employee + ", you are invited to attend our training session."
-    : "You are invited to attend our training session.";
+    "You are invited to attend our training session.";
 
   document.getElementById("employeeDate").textContent =
     formatDate(data.date);
